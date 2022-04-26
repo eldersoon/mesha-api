@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RegistersController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,7 +29,8 @@ Route::group([
 
     // PROTECTED ROUTES
     Route::group(['middleware' => ['jwt.verify']], function() {
-        //
+        // registers
+        Route::get('registers', [RegistersController::class, 'get']);
     });
 
 });
