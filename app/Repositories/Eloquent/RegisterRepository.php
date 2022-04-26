@@ -15,36 +15,90 @@ class RegisterRepository implements RegisterRepositoryInterface{
 
     public function getAll($select) {
 
-        $registers = $this->model->select($select)
-        ->with(['registerKnowledge.knowledge'])->get();
+        try {
+            $registers = $this->model->select($select)
+                ->with(['registerKnowledge.knowledge'])->get();
 
+            foreach($registers as $register) {
+                $know = [];
+                foreach($register->registerKnowledge as $relationship) {
+                    array_push($know, $relationship->knowledge);
+                }
+                $register->knowledge = $know;
+                unset($register->registerKnowledge);
+            }
 
-        foreach($registers as $register) {
+        } catch (\PDOException $err) {
+            $errors = [];
+            foreach($err as $e){
+                array_push($errors, $e);
+            }
+            return response()->json([
+                'response' => [],
+                'message' => 'Erro ao efetuar operação.',
+                'status' => 400,
+                'errors' => $errors
+            ]);
+        }
+
+        return response()->json([
+            'response' => [
+                'registers' => $registers
+            ],
+            'message' => 'Operação efetuada com sucesso.',
+            'status' => 200,
+            'errors' => []
+        ]);
+    }
+
+    public function getOne($select, $id){
+
+        try {
+
+            $register = $this->model->select($select)
+                ->with(['registerKnowledge.knowledge'])
+                ->where('id', $id)
+                ->first();
+
+            if(!$register) {
+                return response()->json([
+                    'response' => [
+                        'registers' => []
+                    ],
+                    'message' => 'Registro não encontrado.',
+                    'status' => 200,
+                    'errors' => []
+                ]);
+            }
+
             $know = [];
             foreach($register->registerKnowledge as $relationship) {
                 array_push($know, $relationship->knowledge);
             }
             $register->knowledge = $know;
             unset($register->registerKnowledge);
+
+        } catch (\PDOException $err) {
+            $errors = [];
+            foreach($err as $e){
+                array_push($errors, $e);
+            }
+            return response()->json([
+                'response' => [],
+                'message' => 'Erro ao efetuar operação.',
+                'status' => 400,
+                'errors' => $errors
+            ]);
         }
 
-        return $registers;
-    }
-
-    public function getOne($select, $id){
-        $register = $this->model->select($select)
-            ->with(['registerKnowledge.knowledge'])
-            ->where('id', $id)
-            ->first();
-
-        $know = [];
-        foreach($register->registerKnowledge as $relationship) {
-            array_push($know, $relationship->knowledge);
-        }
-        $register->knowledge = $know;
-        unset($register->registerKnowledge);
-
-        return $register;
+        return response()->json([
+            'response' => [
+                'registers' => $register
+            ],
+            'message' => 'Operação efetuada com sucesso.',
+            'status' => 200,
+            'errors' => []
+        ]);
     }
 
     public function create($model, $request){
@@ -110,6 +164,16 @@ class RegisterRepository implements RegisterRepositoryInterface{
     public function delete($id){
        try {
             $register = $this->model::find($id);
+
+            if(!$register) {
+                return response()->json([
+                    'response' => [],
+                    'message' => 'Registro não encontrado.',
+                    'status' => 200,
+                    'errors' => []
+                ]);
+            }
+
             $register->active = 0;
             $register->save();
        } catch (\PDOException $err) {
@@ -137,6 +201,15 @@ class RegisterRepository implements RegisterRepositoryInterface{
 
         try {
             $register = $this->model::find($id);
+
+            if(!$register) {
+                return response()->json([
+                    'response' => [],
+                    'message' => 'Registro não encontrado.',
+                    'status' => 200,
+                    'errors' => []
+                ]);
+            }
 
             if($register->valid == 1) {
                 $register->valid = 0;
