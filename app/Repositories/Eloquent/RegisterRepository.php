@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Register;
 use App\Repositories\Contracts\RegisterRepositoryInterface;
+use Illuminate\Support\Facades\Validator;
 
 class RegisterRepository implements RegisterRepositoryInterface{
 
@@ -47,55 +48,123 @@ class RegisterRepository implements RegisterRepositoryInterface{
     }
 
     public function create($model, $request){
-        $register = $this->model::create([
-            "name" => $request->name,
-            "email" => $request->email,
-            "cpf" => $request->cpf,
-            "celphone" => $request->celphone,
+        $validator = Validator::make($request->all(),[
+            'name' => 'required|max:100',
+            'email' => 'required|unique:registers,email',
+            'cpf'=> 'required|unique:registers,cpf',
+            'celphone' => 'nullable',
+            'knowledges' => 'required'
+        ],[
+            'required' => 'Campo obrigatório',
+            'unique' => 'O :attribute já existe.'
         ]);
 
-        if($register) {
-            foreach($request->knowledges as $knowledge) {
-                $model->create([
-                    "register_id" => $register->id,
-                    "knowledge_id" => $knowledge
-                ]);
-            }
+        if($validator->fails()) {
+            return response()->json([
+                'response' => [],
+                'message' => 'Erro ao efetuar operação.',
+                'status' => 400,
+                'errors' => $validator->errors()
+            ]);
         }
 
-        return $register;
+        try {
+            $register = $this->model::create([
+                "name" => $request->name,
+                "email" => $request->email,
+                "cpf" => $request->cpf,
+                "celphone" => $request->celphone,
+            ]);
+
+            if($register) {
+                foreach($request->knowledges as $knowledge) {
+                    $model->create([
+                        "register_id" => $register->id,
+                        "knowledge_id" => $knowledge
+                    ]);
+                }
+            }
+        } catch (\PDOException $err) {
+            $errors = [];
+            foreach($err as $e){
+                array_push($errors, $e);
+            }
+            return response()->json([
+                'response' => [],
+                'message' => 'Erro ao efetuar operação.',
+                'status' => 400,
+                'errors' => $errors
+            ]);
+        }
+
+        return response()->json([
+            'response' => [],
+            'message' => 'Operação efetuada com sucesso.',
+            'status' => 200,
+            'errors' => []
+        ]);
     }
 
     public function update($request){}
 
     public function delete($id){
-        $register = $this->model::find($id);
-        $register->active = 0;
-        $register->save();
+       try {
+            $register = $this->model::find($id);
+            $register->active = 0;
+            $register->save();
+       } catch (\PDOException $err) {
+            $errors = [];
+            foreach($err as $e){
+                array_push($errors, $e);
+            }
+            return response()->json([
+                'response' => [],
+                'message' => 'Erro ao efetuar operação.',
+                'status' => 400,
+                'errors' => $errors
+            ]);
+       }
 
-        $message = "Registro desativado";
-
-        return  $message;
+        return response()->json([
+            'response' => [],
+            'message' => 'Operação efetuada com sucesso.',
+            'status' => 200,
+            'errors' => []
+        ]);
     }
 
     public function valid($id){
-        $register = $this->model::find($id);
 
+        try {
+            $register = $this->model::find($id);
 
-        if($register->valid == 1) {
-            $register->valid = 0;
-            $register->save();
+            if($register->valid == 1) {
+                $register->valid = 0;
+                $register->save();
+            } else {
+                $register->valid = 1;
+                $register->save();
 
-            $message = "Registro não válido";
+            }
+        } catch (\PDOException $err) {
+            $errors = [];
+            foreach($err as $e){
+                array_push($errors, $e);
+            }
+            return response()->json([
+                'response' => [],
+                'message' => 'Erro ao efetuar operação.',
+                'status' => 400,
+                'errors' => $errors
+            ]);
+       }
 
-            return  $message;
-        }
+        return response()->json([
+            'response' => [],
+            'message' => 'Operação efetuada com sucesso.',
+            'status' => 200,
+            'errors' => []
+        ]);
 
-        $register->valid = 1;
-        $register->save();
-
-        $message = "Registro válido";
-
-        return  $message;
     }
 }

@@ -17,38 +17,24 @@ class RegistersController extends Controller
     public function getAll(RegisterRepository $model) {
         $select = ['id', 'name', 'email', 'celphone', 'valid'];
 
-        return response()->json([
-            'registers' => $model->getAll($select)
-        ]);
+        return $model->getAll($select);
     }
 
     public function getOne(RegisterRepository $model, $id) {
         $select = ['id', 'name', 'email', 'celphone', 'valid'];
 
-        return response()->json([
-            'register' => $model->getOne($select, $id)
-        ]);
+        return $model->getOne($select, $id);
     }
 
     public function create(RegisterRepository $model, Request $request) {
-        return response()->json([
-            'register' => $model->create($this->registerKnowledgeModel, $request)
-        ]);
+        return $model->create($this->registerKnowledgeModel, $request);
     }
 
     public function delete(RegisterRepository $model, $id) {
-        return response()->json([
-            'register' => $model->delete($id)
-        ]);
+        return $model->delete($id);
     }
 
     public function valid(RegisterRepository $model, $id) {
-        return response()->json([
-            $model->valid($id)
-        ]);
+        return $model->valid($id);
     }
-
-
-
-
 }
