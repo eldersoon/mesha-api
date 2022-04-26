@@ -27,11 +27,15 @@ Route::group([
     Route::post('me', [AuthController::class, 'me']);
 
 
-    // PROTECTED ROUTES
+    // REGISTERS ROUTES
     Route::group(['middleware' => ['jwt.verify']], function() {
         // registers
-        Route::get('registers', [RegistersController::class, 'get']);
+        Route::get('registers', [RegistersController::class, 'getAll']);
+        Route::get('register/{id}', [RegistersController::class, 'getOne']);
+        Route::delete('register/{id}', [RegistersController::class, 'delete']);
+        Route::post('register/valid/{id}', [RegistersController::class, 'valid']);
     });
+        Route::post('register', [RegistersController::class, 'create']);
 
 });
 
