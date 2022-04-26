@@ -50,8 +50,8 @@ class RegisterRepository implements RegisterRepositoryInterface{
     public function create($model, $request){
         $validator = Validator::make($request->all(),[
             'name' => 'required|max:100',
-            'email' => 'required|unique:registers,email',
-            'cpf'=> 'required|unique:registers,cpf',
+            'email' => 'required|unique:registers,email|max:100',
+            'cpf'=> 'required|unique:registers,cpf|max:14',
             'celphone' => 'nullable',
             'knowledges' => 'required'
         ],[
