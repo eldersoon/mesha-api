@@ -2,14 +2,12 @@
 
 ## Start
 - open the project and run 'composer install'
-
-## Database configs
 - create a .env file based in .env.example OR run 'cp .env.example .env' 
 - set your database credentials
 - run 'php artisan jwt:secret'
 - run 'php artisan migrate'
 
-## run seeders
+## Run seeders
 - run 'php artisan db:seed --class=KnowledgeSeeder && php artisan db:seed --class=UserSeeder'
 - this will allow you login with email 'admin@admin.com' and password 'admin'
 
